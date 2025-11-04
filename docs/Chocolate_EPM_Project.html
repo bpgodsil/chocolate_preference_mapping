@@ -7511,7 +7511,7 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8c48f84f-8f3d-451b-85ad-54568f8bf766">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2a1c271a-f0b1-4d23-937b-db44ab8148a2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7521,10 +7521,10 @@ a.anchor-link {
 EPM combines <strong>Descriptive Analysis (DA)</strong> data with <strong>consumer preference scores</strong> and is often analyzed using <strong>Partial Least Squares Regression (PLS-R)</strong> (Drake, Watson, &amp; Liu, <em>Annual Review of Food Science and Technology</em>, 2024).</p>
 <p>Here, we simulate this analysis using DA data for six chocolate types and Python/scikit-learn’s PLS-R implementation.<br/>
 Currently, the notebook focuses on simulating and preprocessing liking data (including age effects and mean-centering), with PLS-R modeling and visualization to follow.</p>
-<p><strong>Description of Data</strong></p>
+<p>Description of Data</p>
 <ul>
-<li>The sensochoc dataset contains sensory description of six types of chocolate.</li>
-<li>Each type was evaluated twice by 29 panelists according to 14 sensory descriptors (listed in <code>cols</code> below).</li>
+<li>The sensochoc dataset (from the R package <a href="https://github.com/aswansyahputra/sensehubr"><code>sensehubr</code></a>) contains sensory description of six types of chocolate.</li>
+<li>Each type was evaluated twice by 29 panelists, who provided ratings on 14 sensory descriptors (listed in <code>cols</code> below).</li>
 </ul>
 </div>
 </div>
@@ -7541,43 +7541,45 @@ Currently, the notebook focuses on simulating and preprocessing liking data (inc
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2cd77957-a414-44d7-8eec-849e5c255364">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=97ce50eb-6ee6-404b-bc95-7cdebf6669b6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Setup">Setup<a class="anchor-link" href="#Setup">¶</a></h2><ul>
-<li>Import packages</li>
-<li>Read in sensochoc data borrowed from the R package <a href="https://github.com/aswansyahputra/sensehubr"><code>sensehubr</code></a></li>
-</ul>
+<h2 id="Setup-and-Data-Import">Setup and Data Import<a class="anchor-link" href="#Setup-and-Data-Import">¶</a></h2>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=82dbf8a2-22cc-424a-9e47-9dd903780dd2">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f6439a2d-71bb-4cde-88d8-cf6783a37576">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [67]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cross_decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PLSRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">cross_val_score</span><span class="p">,</span> <span class="n">KFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shap</span>
 
 <span class="c1"># project root</span>
 <span class="n">repo_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
 
-<span class="c1"># CSV path</span>
+<span class="c1"># sensory data path</span>
 <span class="n">CSV_PATH</span> <span class="o">=</span> <span class="n">repo_root</span> <span class="o">/</span> <span class="s2">"data"</span> <span class="o">/</span> <span class="s2">"sensochoc_dataset.csv"</span>
 <span class="k">assert</span> <span class="n">CSV_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">"CSV file not found: </span><span class="si">{</span><span class="n">CSV_PATH</span><span class="si">}</span><span class="s2">"</span>
 
-<span class="c1"># read CSV</span>
+<span class="c1"># read sensory data</span>
 <span class="n">df_original</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CSV_PATH</span><span class="p">)</span>
 
-<span class="c1"># check</span>
+<span class="c1"># view sensory data</span>
 <span class="n">df_original</span>
 </pre></div>
 </div>
@@ -7589,7 +7591,7 @@ Currently, the notebook focuses on simulating and preprocessing liking data (inc
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[67]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -7893,7 +7895,7 @@ Currently, the notebook focuses on simulating and preprocessing liking data (inc
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f7e172c4-0f12-4c9a-b07e-62b1a90da199">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=87b58ca8-4cf5-4506-89e3-1a1bdd23ff02">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7904,7 +7906,7 @@ Currently, the notebook focuses on simulating and preprocessing liking data (inc
 <li>The 14 ratings provided by each participant will be averaged across the two timepoints</li>
 <li>The averaged ratings for the 29 panelists will be averaged across each chocolate type</li>
 </ol>
-<p>These steps create a data.frame with <strong>one row for each of the six chocolates</strong>.</p>
+<p>These steps create a data.frame with <strong>one row for each of the six chocolates</strong>, which is suitable for PLS-R analysis.</p>
 </div>
 </div>
 </div>
@@ -7913,7 +7915,7 @@ Currently, the notebook focuses on simulating and preprocessing liking data (inc
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># columns that will be aggregated</span>
@@ -7952,7 +7954,7 @@ Rows after avg across panelists: 6
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[21]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8123,7 +8125,7 @@ Rows after avg across panelists: 6
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [101]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># set seed for reproduciblity</span>
@@ -8156,17 +8158,20 @@ Rows after avg across panelists: 6
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pid</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">liking</span><span class="p">))</span>
 
 <span class="c1"># result</span>
-<span class="n">liking_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"person_id"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">,</span> <span class="s2">"product"</span><span class="p">,</span> <span class="s2">"liking"</span><span class="p">])</span>
+<span class="n">df_liking</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"person_id"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">,</span> <span class="s2">"product"</span><span class="p">,</span> <span class="s2">"liking"</span><span class="p">])</span>
 
 <span class="c1"># rescale to remove negative values</span>
-<span class="n">abs_min_liking</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">liking_df</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">]))</span>
-<span class="n">liking_df</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">]</span> <span class="o">=</span> <span class="n">liking_df</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">]</span> <span class="o">+</span> <span class="n">abs_min_liking</span> <span class="o">+</span> <span class="mf">0.5</span>
+<span class="n">abs_min_liking</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">df_liking</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">]))</span>
+<span class="n">df_liking</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_liking</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">]</span> <span class="o">+</span> <span class="n">abs_min_liking</span> <span class="o">+</span> <span class="mf">0.5</span>
 
 <span class="c1"># center liking scores by individual</span>
-<span class="n">liking_df</span><span class="p">[</span><span class="s2">"liking_centered"</span><span class="p">]</span> <span class="o">=</span> <span class="n">liking_df</span><span class="p">[</span><span class="s2">"liking"</span><span class="p">]</span> <span class="o">-</span> <span class="n">liking_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"person_id"</span><span class="p">)[</span><span class="s2">"liking"</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">"mean"</span><span class="p">)</span>
+<span class="n">df_liking</span><span class="p">[</span><span class="s2">"liking_centered"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_liking</span><span class="p">[</span><span class="s2">"liking"</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_liking</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"person_id"</span><span class="p">)[</span><span class="s2">"liking"</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">"mean"</span><span class="p">)</span>
+
+<span class="c1"># create string version of person_id</span>
+<span class="n">df_liking</span><span class="p">[</span><span class="s1">'person_id_str'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_liking</span><span class="p">[</span><span class="s1">'person_id'</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"id_</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># check</span>
-<span class="n">liking_df</span>
+<span class="n">df_liking</span>
 </pre></div>
 </div>
 </div>
@@ -8177,7 +8182,7 @@ Rows after avg across panelists: 6
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[101]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[24]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8202,6 +8207,7 @@ Rows after avg across panelists: 6
 <th>product</th>
 <th>liking</th>
 <th>liking_centered</th>
+<th>person_id_str</th>
 </tr>
 </thead>
 <tbody>
@@ -8212,6 +8218,7 @@ Rows after avg across panelists: 6
 <td>choc1</td>
 <td>2.514183</td>
 <td>-1.230086</td>
+<td>id_001</td>
 </tr>
 <tr>
 <th>1</th>
@@ -8220,6 +8227,7 @@ Rows after avg across panelists: 6
 <td>choc2</td>
 <td>3.375302</td>
 <td>-0.368967</td>
+<td>id_001</td>
 </tr>
 <tr>
 <th>2</th>
@@ -8228,6 +8236,7 @@ Rows after avg across panelists: 6
 <td>choc3</td>
 <td>6.300201</td>
 <td>2.555931</td>
+<td>id_001</td>
 </tr>
 <tr>
 <th>3</th>
@@ -8236,6 +8245,7 @@ Rows after avg across panelists: 6
 <td>choc4</td>
 <td>2.676052</td>
 <td>-1.068218</td>
+<td>id_001</td>
 </tr>
 <tr>
 <th>4</th>
@@ -8244,9 +8254,11 @@ Rows after avg across panelists: 6
 <td>choc5</td>
 <td>3.550064</td>
 <td>-0.194205</td>
+<td>id_001</td>
 </tr>
 <tr>
 <th>...</th>
+<td>...</td>
 <td>...</td>
 <td>...</td>
 <td>...</td>
@@ -8260,6 +8272,7 @@ Rows after avg across panelists: 6
 <td>choc2</td>
 <td>4.772867</td>
 <td>-0.248171</td>
+<td>id_138</td>
 </tr>
 <tr>
 <th>824</th>
@@ -8268,6 +8281,7 @@ Rows after avg across panelists: 6
 <td>choc3</td>
 <td>8.073904</td>
 <td>3.052867</td>
+<td>id_138</td>
 </tr>
 <tr>
 <th>825</th>
@@ -8276,6 +8290,7 @@ Rows after avg across panelists: 6
 <td>choc4</td>
 <td>3.857839</td>
 <td>-1.163199</td>
+<td>id_138</td>
 </tr>
 <tr>
 <th>826</th>
@@ -8284,6 +8299,7 @@ Rows after avg across panelists: 6
 <td>choc5</td>
 <td>4.749630</td>
 <td>-0.271407</td>
+<td>id_138</td>
 </tr>
 <tr>
 <th>827</th>
@@ -8292,10 +8308,11 @@ Rows after avg across panelists: 6
 <td>choc6</td>
 <td>6.333132</td>
 <td>1.312095</td>
+<td>id_138</td>
 </tr>
 </tbody>
 </table>
-<p>828 rows × 5 columns</p>
+<p>828 rows × 6 columns</p>
 </div>
 </div>
 </div>
@@ -8306,7 +8323,7 @@ Rows after avg across panelists: 6
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [108]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># visualize liking, liking_centered scores and age</span>
@@ -8315,17 +8332,16 @@ Rows after avg across panelists: 6
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># histogram for raw liking</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">liking_df</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df_liking</span><span class="p">[</span><span class="s1">'liking'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Raw Liking"</span><span class="p">)</span>
 
 <span class="c1"># histogram for mean-centered liking</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">liking_df</span><span class="p">[</span><span class="s1">'liking_centered'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df_liking</span><span class="p">[</span><span class="s1">'liking_centered'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Mean-Centered Liking"</span><span class="p">)</span>
 
 <span class="c1"># histogram of age distribution</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">liking_df</span><span class="p">[</span><span class="s1">'age'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="c1"># be aware there are 6 replicated per person in this chart</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df_liking</span><span class="p">[</span><span class="s1">'age'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="c1"># be aware there are 6 replicated per person in this chart</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Age"</span><span class="p">)</span>
-
 
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -8345,7 +8361,452 @@ Rows after avg across panelists: 6
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=70c4c647-7939-4cf5-adef-ae1439e98226">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=557e2326-223c-476b-b6b6-398951e9af6a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [25]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># spread df_liking across person_id</span>
+<span class="n">df_liking_wide</span> <span class="o">=</span> <span class="n">df_liking</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'product'</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="s1">'person_id_str'</span><span class="p">,</span><span class="n">values</span><span class="o">=</span><span class="s1">'liking_centered'</span><span class="p">)</span>
+<span class="n">df_liking_wide</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[25]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th>person_id_str</th>
+<th>id_001</th>
+<th>id_002</th>
+<th>id_003</th>
+<th>id_004</th>
+<th>id_005</th>
+<th>id_006</th>
+<th>id_007</th>
+<th>id_008</th>
+<th>id_009</th>
+<th>id_010</th>
+<th>...</th>
+<th>id_129</th>
+<th>id_130</th>
+<th>id_131</th>
+<th>id_132</th>
+<th>id_133</th>
+<th>id_134</th>
+<th>id_135</th>
+<th>id_136</th>
+<th>id_137</th>
+<th>id_138</th>
+</tr>
+<tr>
+<th>product</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>choc1</th>
+<td>-1.230086</td>
+<td>-3.238282</td>
+<td>-2.635446</td>
+<td>-1.973961</td>
+<td>-2.353559</td>
+<td>-1.907314</td>
+<td>-2.557004</td>
+<td>-2.004627</td>
+<td>-1.474562</td>
+<td>-2.294864</td>
+<td>...</td>
+<td>-1.266108</td>
+<td>-0.875503</td>
+<td>-2.175879</td>
+<td>-2.515597</td>
+<td>-2.007367</td>
+<td>-2.186207</td>
+<td>-1.854175</td>
+<td>-1.669626</td>
+<td>-2.327413</td>
+<td>-2.682185</td>
+</tr>
+<tr>
+<th>choc2</th>
+<td>-0.368967</td>
+<td>0.349732</td>
+<td>-0.117230</td>
+<td>-0.247477</td>
+<td>-0.680649</td>
+<td>-0.800723</td>
+<td>-0.009680</td>
+<td>-1.543138</td>
+<td>-0.302190</td>
+<td>-0.165134</td>
+<td>...</td>
+<td>-0.371802</td>
+<td>-0.415965</td>
+<td>-0.324812</td>
+<td>-0.943544</td>
+<td>-0.582596</td>
+<td>-0.277061</td>
+<td>-0.511310</td>
+<td>-1.031822</td>
+<td>-0.558816</td>
+<td>-0.248171</td>
+</tr>
+<tr>
+<th>choc3</th>
+<td>2.555931</td>
+<td>3.011845</td>
+<td>2.923598</td>
+<td>1.271970</td>
+<td>3.329588</td>
+<td>2.474329</td>
+<td>3.222357</td>
+<td>3.234426</td>
+<td>2.488539</td>
+<td>2.812320</td>
+<td>...</td>
+<td>1.845608</td>
+<td>2.095895</td>
+<td>3.133279</td>
+<td>3.127423</td>
+<td>2.731526</td>
+<td>2.574533</td>
+<td>2.952605</td>
+<td>3.074621</td>
+<td>2.732295</td>
+<td>3.052867</td>
+</tr>
+<tr>
+<th>choc4</th>
+<td>-1.068218</td>
+<td>-0.663067</td>
+<td>-0.540728</td>
+<td>-0.407451</td>
+<td>-1.012828</td>
+<td>-0.784122</td>
+<td>-1.281409</td>
+<td>-0.212301</td>
+<td>-1.128849</td>
+<td>-0.692862</td>
+<td>...</td>
+<td>-0.885166</td>
+<td>-0.889423</td>
+<td>-0.483441</td>
+<td>-0.977342</td>
+<td>-0.150460</td>
+<td>-0.881242</td>
+<td>-0.907410</td>
+<td>-0.893804</td>
+<td>-0.207406</td>
+<td>-1.163199</td>
+</tr>
+<tr>
+<th>choc5</th>
+<td>-0.194205</td>
+<td>0.466454</td>
+<td>-0.046326</td>
+<td>0.638645</td>
+<td>0.181683</td>
+<td>0.700581</td>
+<td>-0.366856</td>
+<td>-0.387424</td>
+<td>-0.154205</td>
+<td>0.406129</td>
+<td>...</td>
+<td>-1.182365</td>
+<td>0.166164</td>
+<td>-0.374176</td>
+<td>0.644109</td>
+<td>-0.498371</td>
+<td>-0.267223</td>
+<td>-0.529666</td>
+<td>0.058637</td>
+<td>0.224386</td>
+<td>-0.271407</td>
+</tr>
+<tr>
+<th>choc6</th>
+<td>0.305545</td>
+<td>0.073319</td>
+<td>0.416131</td>
+<td>0.718274</td>
+<td>0.535766</td>
+<td>0.317250</td>
+<td>0.992592</td>
+<td>0.913064</td>
+<td>0.571267</td>
+<td>-0.065589</td>
+<td>...</td>
+<td>1.859832</td>
+<td>-0.081169</td>
+<td>0.225029</td>
+<td>0.664952</td>
+<td>0.507269</td>
+<td>1.037200</td>
+<td>0.849957</td>
+<td>0.461994</td>
+<td>0.136953</td>
+<td>1.312095</td>
+</tr>
+</tbody>
+</table>
+<p>6 rows × 138 columns</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=70c4c647-7939-4cf5-adef-ae1439e98226">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Assign features (X) and target variable (y)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">df_product</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df_liking_wide</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>  product   cocoa_a    milk_a   cocoa_f    milk_f   caramel   vanilla  \
+0   choc1  7.086207  3.586207  8.068966  1.568966  1.672414  1.103448   
+1   choc2  6.551724  4.000000  6.913793  2.379310  2.775862  1.810345   
+2   choc3  4.672414  6.051724  3.379310  7.706897  6.327586  3.672414   
+3   choc4  6.258621  4.103448  6.689655  2.586207  2.672414  2.120690   
+4   choc5  6.793103  4.172414  6.793103  3.120690  3.413793  1.793103   
+
+   sweetness   acidity  bitterness  astringency   crunchy   melting    sticky  \
+0   3.137931  4.655172    7.068966     4.758621  5.965517  4.741379  3.758621   
+1   4.620690  3.137931    4.948276     3.155172  7.706897  4.327586  3.827586   
+2   7.603448  1.568966    1.396552     1.206897  2.982759  7.310345  5.034483   
+3   4.293103  3.931034    5.189655     3.689655  6.103448  4.379310  4.103448   
+4   5.224138  3.086207    4.879310     3.103448  6.637931  4.741379  3.224138   
+
+   granular  
+0  3.448276  
+1  3.155172  
+2  1.603448  
+3  3.551724  
+4  3.068966   person_id       1         2         3         4         5         6    \
+product                                                                 
+choc1     -1.230086 -3.238282 -2.635446 -1.973961 -2.353559 -1.907314   
+choc2     -0.368967  0.349732 -0.117230 -0.247477 -0.680649 -0.800723   
+choc3      2.555931  3.011845  2.923598  1.271970  3.329588  2.474329   
+choc4     -1.068218 -0.663067 -0.540728 -0.407451 -1.012828 -0.784122   
+choc5     -0.194205  0.466454 -0.046326  0.638645  0.181683  0.700581   
+choc6      0.305545  0.073319  0.416131  0.718274  0.535766  0.317250   
+
+person_id       7         8         9         10   ...       129       130  \
+product                                            ...                       
+choc1     -2.557004 -2.004627 -1.474562 -2.294864  ... -1.266108 -0.875503   
+choc2     -0.009680 -1.543138 -0.302190 -0.165134  ... -0.371802 -0.415965   
+choc3      3.222357  3.234426  2.488539  2.812320  ...  1.845608  2.095895   
+choc4     -1.281409 -0.212301 -1.128849 -0.692862  ... -0.885166 -0.889423   
+choc5     -0.366856 -0.387424 -0.154205  0.406129  ... -1.182365  0.166164   
+choc6      0.992592  0.913064  0.571267 -0.065589  ...  1.859832 -0.081169   
+
+person_id       131       132       133       134       135       136  \
+product                                                                 
+choc1     -2.175879 -2.515597 -2.007367 -2.186207 -1.854175 -1.669626   
+choc2     -0.324812 -0.943544 -0.582596 -0.277061 -0.511310 -1.031822   
+choc3      3.133279  3.127423  2.731526  2.574533  2.952605  3.074621   
+choc4     -0.483441 -0.977342 -0.150460 -0.881242 -0.907410 -0.893804   
+choc5     -0.374176  0.644109 -0.498371 -0.267223 -0.529666  0.058637   
+choc6      0.225029  0.664952  0.507269  1.037200  0.849957  0.461994   
+
+person_id       137       138  
+product                        
+choc1     -2.327413 -2.682185  
+choc2     -0.558816 -0.248171  
+choc3      2.732295  3.052867  
+choc4     -0.207406 -1.163199  
+choc5      0.224386 -0.271407  
+choc6      0.136953  1.312095  
+
+[6 rows x 138 columns]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=cf8925da-1864-40d2-8bad-6bfc62f517dd">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Split the data into training and testing sets</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">17</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[13]</span><span class="ansi-green-fg">, line 2</span>
+<span class="ansi-green-fg">      1</span> <span style="color: rgb(95,135,135)"># Split the data into training and testing sets</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">2</span> X_train, X_test, y_train, y_test = <span class="ansi-yellow-bg">train_test_split</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">X</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">y</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">test_size</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg"> </span><span class="ansi-green-fg ansi-yellow-bg">0.2</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">random_state</span><span class="ansi-yellow-bg">=</span><span class="ansi-green-fg ansi-yellow-bg">17</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~\miniconda3\envs\py_sql\Lib\site-packages\sklearn\utils\_param_validation.py:218</span>, in <span class="ansi-cyan-fg">validate_params.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-fg">    212</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">    213</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> config_context(
+<span class="ansi-green-fg">    214</span>         skip_parameter_validation=(
+<span class="ansi-green-fg">    215</span>             prefer_skip_nested_validation <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> global_skip_validation
+<span class="ansi-green-fg">    216</span>         )
+<span class="ansi-green-fg">    217</span>     ):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">218</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">func</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    219</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> InvalidParameterError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> e:
+<span class="ansi-green-fg">    220</span>     <span style="color: rgb(95,135,135)"># When the function is just a wrapper around an estimator, we allow</span>
+<span class="ansi-green-fg">    221</span>     <span style="color: rgb(95,135,135)"># the function to delegate validation to the estimator, but we replace</span>
+<span class="ansi-green-fg">    222</span>     <span style="color: rgb(95,135,135)"># the name of the estimator by the name of the function in the error</span>
+<span class="ansi-green-fg">    223</span>     <span style="color: rgb(95,135,135)"># message to avoid confusion.</span>
+<span class="ansi-green-fg">    224</span>     msg = re.sub(
+<span class="ansi-green-fg">    225</span>         <span class="ansi-yellow-fg">r</span><span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">parameter of </span><span class="ansi-yellow-fg">\</span><span class="ansi-yellow-fg">w+ must be</span><span class="ansi-yellow-fg">"</span>,
+<span class="ansi-green-fg">    226</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">parameter of </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>func.<span class="ansi-blue-fg">__qualname__</span><span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg"> must be</span><span class="ansi-yellow-fg">"</span>,
+<span class="ansi-green-fg">    227</span>         <span style="color: rgb(0,135,0)">str</span>(e),
+<span class="ansi-green-fg">    228</span>     )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~\miniconda3\envs\py_sql\Lib\site-packages\sklearn\model_selection\_split.py:2916</span>, in <span class="ansi-cyan-fg">train_test_split</span><span class="ansi-blue-fg">(test_size, train_size, random_state, shuffle, stratify, *arrays)</span>
+<span class="ansi-green-fg">   2913</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> n_arrays == <span class="ansi-green-fg">0</span>:
+<span class="ansi-green-fg">   2914</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">At least one array required as input</span><span class="ansi-yellow-fg">"</span>)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">2916</span> arrays = <span class="ansi-yellow-bg">indexable</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">arrays</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   2918</span> n_samples = _num_samples(arrays[<span class="ansi-green-fg">0</span>])
+<span class="ansi-green-fg">   2919</span> n_train, n_test = _validate_shuffle_split(
+<span class="ansi-green-fg">   2920</span>     n_samples, test_size, train_size, default_test_size=<span class="ansi-green-fg">0.25</span>
+<span class="ansi-green-fg">   2921</span> )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~\miniconda3\envs\py_sql\Lib\site-packages\sklearn\utils\validation.py:530</span>, in <span class="ansi-cyan-fg">indexable</span><span class="ansi-blue-fg">(*iterables)</span>
+<span class="ansi-green-fg">    500</span> <span class="ansi-yellow-fg">"""Make arrays indexable for cross-validation.</span>
+<span class="ansi-green-fg">    501</span> 
+<span class="ansi-green-fg">    502</span> <span class="ansi-yellow-fg">Checks consistent length, passes through None, and ensures that everything</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    526</span> <span class="ansi-yellow-fg">[[1, 2, 3], array([2, 3, 4]), None, &lt;...Sparse...dtype 'int64'...shape (3, 1)&gt;]</span>
+<span class="ansi-green-fg">    527</span> <span class="ansi-yellow-fg">"""</span>
+<span class="ansi-green-fg">    529</span> result = [_make_indexable(X) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> X <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> iterables]
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">530</span> <span class="ansi-yellow-bg">check_consistent_length</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">result</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    531</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> result
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~\miniconda3\envs\py_sql\Lib\site-packages\sklearn\utils\validation.py:473</span>, in <span class="ansi-cyan-fg">check_consistent_length</span><span class="ansi-blue-fg">(*arrays)</span>
+<span class="ansi-green-fg">    471</span> lengths = [_num_samples(X) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> X <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> arrays <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> X <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>]
+<span class="ansi-green-fg">    472</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">len</span>(<span style="color: rgb(0,135,0)">set</span>(lengths)) &gt; <span class="ansi-green-fg">1</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">473</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(
+<span class="ansi-green-fg">    474</span>         <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Found input variables with inconsistent numbers of samples: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%r</span><span class="ansi-yellow-fg">"</span>
+<span class="ansi-green-fg">    475</span>         % [<span style="color: rgb(0,135,0)">int</span>(l) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> l <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> lengths]
+<span class="ansi-green-fg">    476</span>     )
+
+<span class="ansi-red-fg">ValueError</span>: Found input variables with inconsistent numbers of samples: [6, 828]</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=29757af9-7048-4fa7-a419-7404e65b85fa">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>    product  liking_centered
+0     choc1        -1.230086
+1     choc2        -0.368967
+2     choc3         2.555931
+3     choc4        -1.068218
+4     choc5        -0.194205
+..      ...              ...
+823   choc2        -0.248171
+824   choc3         3.052867
+825   choc4        -1.163199
+826   choc5        -0.271407
+827   choc6         1.312095
+
+[828 rows x 2 columns]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ffc48fb7-acf8-48de-ac86-8ec8b6601db4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>

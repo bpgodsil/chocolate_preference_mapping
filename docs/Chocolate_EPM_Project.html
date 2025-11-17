@@ -7511,21 +7511,25 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=dcc8b17a-a646-4fc9-8ced-81feb45504bd">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=efbb22b5-d454-4e14-8ee9-e5e2ae989b60">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="External-Preference-Mapping-(EPM)-with-Simulated-Chocolate-Data">External Preference Mapping (EPM) with Simulated Chocolate Data<a class="anchor-link" href="#External-Preference-Mapping-(EPM)-with-Simulated-Chocolate-Data">¶</a></h2><p>This notebook shows how <strong>External Preference Mapping (EPM)</strong> can be implemented in Python to relate <em>product sensory profiles</em> to simulated <em>consumer product liking</em> data.</p>
-<p>EPM combines <strong>Descriptive Analysis (DA)</strong> results with <strong>consumer preference scores</strong> and is often analyzed using <strong>Partial Least Squares Regression (PLS-R)</strong> (Drake, Watson, &amp; Liu, <em>Annual Review of Food Science and Technology</em>, 2024).</p>
-<p>To illustrate a sensory data modeling workflow, this notebook uses the <em>sensochoc</em> example from the R package <a href="https://github.com/aswansyahputra/sensehubr"><code>sensehubr</code></a>, and expands the number of cases further by creating synthetically-genreated data using Python’s scikit-learn. The dataset includes six observed chocolate types and 44 synthetically generated cases, with simulated liking scores.</p>
-<p>The current version focuses on data simulation and preprocessing (including age effects and mean-centering), followed by PLS-R models for liking scores that were designed to have linear and non-linear relationships with the sensory features of the chocolate products.</p>
+<h2 id="External-Preference-Mapping-(EPM)-with-Simulated-Chocolate-Data">External Preference Mapping (EPM) with Simulated Chocolate Data<a class="anchor-link" href="#External-Preference-Mapping-(EPM)-with-Simulated-Chocolate-Data">¶</a></h2><p>This notebook shows how <strong>External Preference Mapping (EPM)</strong> can be implemented in Python to relate <em>product sensory profiles</em> to simulated <em>consumer product liking</em> data. EPM combines Descriptive Analysis (DA) results with consumer preference scores and is often analyzed using Partial Least Squares Regression (PLS-R) (Drake, Watson, &amp; Liu, <em>Annual Review of Food Science and Technology</em>, 2024).</p>
+<p>This notebook demonstrates a sensory data workflow, from simulation and preprocessing to preference modeling with PLS-R.</p>
+<ul>
+<li><p>I start with the <em>sensochoc</em> example from the R package <a href="https://github.com/aswansyahputra/sensehubr"><code>sensehubr</code></a>, and extend it by creating additional synthetic chocolate profiles in Python, yielding fifty total products.</p>
+</li>
+<li><p>I then simulate consumer liking data (including age-related effects), preprocesses the sensory features through mean-centering, and fit two PLS-R models: one based on a linear liking function and one based on a non-linear liking function to explore how PLS-R performs in each scenario.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e83355b2-a4c5-405c-8fd7-2b946d876a13">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=57127696-a89e-4e67-88e9-570a3a939fee">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7564,10 +7568,11 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># libraries</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -7575,10 +7580,11 @@ a.anchor-link {
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cross_decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PLSRegression</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">cross_val_score</span><span class="p">,</span> <span class="n">KFold</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">shap</span>
 
 <span class="c1"># project root</span>
 <span class="n">repo_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Adding to sys.path:"</span><span class="p">,</span> <span class="n">repo_root</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_root</span><span class="p">))</span>   <span class="c1"># add project root t</span>
 
 <span class="c1"># sensory data path</span>
 <span class="n">CSV_PATH</span> <span class="o">=</span> <span class="n">repo_root</span> <span class="o">/</span> <span class="s2">"data"</span> <span class="o">/</span> <span class="s2">"sensochoc_dataset.csv"</span>
@@ -7598,6 +7604,13 @@ a.anchor-link {
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Adding to sys.path: C:\Users\godsi\Projects\git_projects\chocolate_preference_mapping
+</pre>
+</div>
+</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
@@ -7903,7 +7916,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cb6c49c0-4152-4172-8428-6e07a3aad687">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d675270a-40e6-4556-8ad9-3f5b8dfce233">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7916,7 +7929,7 @@ a.anchor-link {
 <li>The 14 ratings provided by each participant will be averaged across the two timepoints</li>
 <li>The averaged ratings for the 29 panelists will be averaged across each chocolate type</li>
 </ol>
-<p>These steps create a dataframe with <strong>one row for each of the 50 chocolates</strong>, which is suitable for PLS-R analysis.</p>
+<p>These steps create a dataframe with <strong>one row for each of the 6 chocolates</strong>, which is suitable for PLS-R analysis.</p>
 </div>
 </div>
 </div>
@@ -7925,7 +7938,7 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># column names of sensory descriptors</span>
@@ -8138,7 +8151,7 @@ Rows after avg across panelists: 6
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># create X_df with product as index</span>
@@ -8385,7 +8398,7 @@ Rows after avg across panelists: 6
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e444d13b-a5a2-4a69-8080-16e8675c04a0">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bbf0c16c-9851-4ce1-b9fd-e6b2e830e7ac">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8395,8 +8408,8 @@ Rows after avg across panelists: 6
 <h3 id="Simulated-Liking-Data-Preprocessing">Simulated Liking Data Preprocessing<a class="anchor-link" href="#Simulated-Liking-Data-Preprocessing">¶</a></h3><p>The goal of this exercise is to explore the usage of PLS-R with the sensory data combined with product liking ratings from consumers.
 Because the <em>sensochoc</em> dataset does not contain such consumer information, we will simulate liking ratings in two ways:</p>
 <ul>
-<li><strong>Linear liking</strong> approximated by a linear relationship with sensory descriptors (used in the current analysis)</li>
-<li><strong>Non-linear liking</strong> approximated by a non-linear relationship with sensory descriptors (made for future analysis)</li>
+<li><strong>Linear liking</strong> modeled as a simple linear combination of the sensory attributes, where sweetness, bitterness, and astringency contribute additively</li>
+<li><strong>Non-linear liking</strong> modeled age-dependent preference shifts and a non-linear response to extreme sweetness</li>
 </ul>
 <p>We simulate liking ratings in a roughly ecological way by linking them to a subset of sensory attributes and the consumer’s age.
 To control for individual differences in rating behavior, we also mean-center the raw liking ratings per person.</p>
@@ -8408,10 +8421,13 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># set seed for reproduciblity</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scripts.liking_linear</span><span class="w"> </span><span class="kn">import</span> <span class="n">linear_liking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scripts.liking_nonlinear</span><span class="w"> </span><span class="kn">import</span> <span class="n">nonlinear_liking</span>
+
+<span class="c1"># set seed for reproduciblity</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 
 <span class="c1"># person-level data</span>
@@ -8422,25 +8438,11 @@ To control for individual differences in rating behavior, we also mean-center th
 <span class="c1"># product series</span>
 <span class="n">product</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"choc</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">51</span><span class="p">)]</span>
 
-<span class="c1"># function to simulate liking scores based on a linear relationship with sensory attributes</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">linear_liking</span><span class="p">(</span><span class="n">prod</span><span class="p">,</span> <span class="n">age</span><span class="p">):</span>
-    <span class="n">liking</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X_all_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">prod</span><span class="p">,</span> <span class="s1">'sweetness'</span><span class="p">]</span> <span class="c1"># sweetness is liked</span>
-    <span class="o">-</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">X_all_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">prod</span><span class="p">,</span> <span class="s1">'bitterness'</span><span class="p">]</span> <span class="c1"># bitterness is not liked</span>
-    <span class="o">-</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">X_all_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">prod</span><span class="p">,</span> <span class="s1">'astringency'</span><span class="p">]</span> <span class="c1"># astringency is not liked</span>
-    <span class="o">+</span> <span class="mf">0.02</span> <span class="o">*</span> <span class="p">(</span><span class="mi">75</span> <span class="o">-</span> <span class="n">age</span><span class="p">)</span>  <span class="c1"># younger gets a sweetness boost</span>
-    <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="c1"># noise</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">liking</span>
-
-<span class="c1"># function to simulate liking scores based on a non-linear relationship with sensory attributes</span>
-<span class="o">%</span><span class="k">run</span> ../scripts/nonlinear_liking.py
-
 <span class="c1"># nested loop to simulate data</span>
 <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">pid</span><span class="p">,</span> <span class="n">age</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pids</span><span class="p">,</span> <span class="n">ages</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">product</span><span class="p">:</span>
-        <span class="n">l_liking</span> <span class="o">=</span> <span class="n">linear_liking</span><span class="p">(</span><span class="n">prod</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span>
+        <span class="n">l_liking</span> <span class="o">=</span> <span class="n">linear_liking</span><span class="p">(</span><span class="n">prod</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">X_df</span> <span class="o">=</span> <span class="n">X_all_df</span><span class="p">)</span>
         <span class="n">nl_liking</span> <span class="o">=</span> <span class="n">nonlinear_liking</span><span class="p">(</span><span class="n">prod</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">X_df</span> <span class="o">=</span> <span class="n">X_all_df</span><span class="p">)</span>
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">pid</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">prod</span><span class="p">,</span> <span class="n">l_liking</span><span class="p">,</span> <span class="n">nl_liking</span><span class="p">))</span>
 
@@ -8650,7 +8652,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [38]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># visualize liking_centered scores and age</span>
@@ -8702,7 +8704,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [39]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># spread linear liking across person_id</span>
@@ -8718,7 +8720,7 @@ To control for individual differences in rating behavior, we also mean-center th
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[39]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8930,7 +8932,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [40]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># spread non-linear liking across person_id</span>
@@ -8946,7 +8948,7 @@ To control for individual differences in rating behavior, we also mean-center th
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[40]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9143,14 +9145,14 @@ To control for individual differences in rating behavior, we also mean-center th
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=38ec3143-6b33-4a90-b775-8db641092dc6">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b08771f0-1e1b-49c4-9339-879a1f0da0f9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <hr/>
-<h2 id="Linear-Liking-PLR-R-Analysis">Linear Liking PLR-R Analysis<a class="anchor-link" href="#Linear-Liking-PLR-R-Analysis">¶</a></h2><p>We perform PLS-R using the sensory data with the liner liking ratings. First we split the data into training and test sets.</p>
+<h2 id="Linear-Liking-PLS-R-Analysis">Linear Liking PLS-R Analysis<a class="anchor-link" href="#Linear-Liking-PLS-R-Analysis">¶</a></h2><p>We perform PLS-R using the sensory data with the liner liking ratings. First we split the data into training and test sets.</p>
 </div>
 </div>
 </div>
@@ -9159,7 +9161,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [61]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># assign sensory data to predictors (X) and linear liking to (y)</span>
@@ -9175,7 +9177,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [62]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># split data into training and testing sets</span>
@@ -9203,7 +9205,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [63]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
@@ -9235,7 +9237,7 @@ To control for individual differences in rating behavior, we also mean-center th
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[63]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>(-1.0, 13.6)</pre>
 </div>
@@ -9264,7 +9266,7 @@ To control for individual differences in rating behavior, we also mean-center th
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [64]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># initialize PLS-R model</span>
@@ -9283,9 +9285,9 @@ To control for individual differences in rating behavior, we also mean-center th
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[64]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<style>#sk-container-id-6 {
+<style>#sk-container-id-1 {
   /* Definition of color scheme common for light and dark mode */
   --sklearn-color-text: #000;
   --sklearn-color-text-muted: #666;
@@ -9316,15 +9318,15 @@ To control for individual differences in rating behavior, we also mean-center th
   }
 }
 
-#sk-container-id-6 {
+#sk-container-id-1 {
   color: var(--sklearn-color-text);
 }
 
-#sk-container-id-6 pre {
+#sk-container-id-1 pre {
   padding: 0;
 }
 
-#sk-container-id-6 input.sk-hidden--visually {
+#sk-container-id-1 input.sk-hidden--visually {
   border: 0;
   clip: rect(1px 1px 1px 1px);
   clip: rect(1px, 1px, 1px, 1px);
@@ -9336,7 +9338,7 @@ To control for individual differences in rating behavior, we also mean-center th
   width: 1px;
 }
 
-#sk-container-id-6 div.sk-dashed-wrapped {
+#sk-container-id-1 div.sk-dashed-wrapped {
   border: 1px dashed var(--sklearn-color-line);
   margin: 0 0.4em 0.5em 0.4em;
   box-sizing: border-box;
@@ -9344,7 +9346,7 @@ To control for individual differences in rating behavior, we also mean-center th
   background-color: var(--sklearn-color-background);
 }
 
-#sk-container-id-6 div.sk-container {
+#sk-container-id-1 div.sk-container {
   /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
      but bootstrap.min.css set `[hidden] { display: none !important; }`
      so we also need the `!important` here to be able to override the
@@ -9354,7 +9356,7 @@ To control for individual differences in rating behavior, we also mean-center th
   position: relative;
 }
 
-#sk-container-id-6 div.sk-text-repr-fallback {
+#sk-container-id-1 div.sk-text-repr-fallback {
   display: none;
 }
 
@@ -9370,14 +9372,14 @@ div.sk-item {
 
 /* Parallel-specific style estimator block */
 
-#sk-container-id-6 div.sk-parallel-item::after {
+#sk-container-id-1 div.sk-parallel-item::after {
   content: "";
   width: 100%;
   border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
   flex-grow: 1;
 }
 
-#sk-container-id-6 div.sk-parallel {
+#sk-container-id-1 div.sk-parallel {
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -9385,28 +9387,28 @@ div.sk-item {
   position: relative;
 }
 
-#sk-container-id-6 div.sk-parallel-item {
+#sk-container-id-1 div.sk-parallel-item {
   display: flex;
   flex-direction: column;
 }
 
-#sk-container-id-6 div.sk-parallel-item:first-child::after {
+#sk-container-id-1 div.sk-parallel-item:first-child::after {
   align-self: flex-end;
   width: 50%;
 }
 
-#sk-container-id-6 div.sk-parallel-item:last-child::after {
+#sk-container-id-1 div.sk-parallel-item:last-child::after {
   align-self: flex-start;
   width: 50%;
 }
 
-#sk-container-id-6 div.sk-parallel-item:only-child::after {
+#sk-container-id-1 div.sk-parallel-item:only-child::after {
   width: 0;
 }
 
 /* Serial-specific style estimator block */
 
-#sk-container-id-6 div.sk-serial {
+#sk-container-id-1 div.sk-serial {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9424,14 +9426,14 @@ clickable and can be expanded/collapsed.
 
 /* Pipeline and ColumnTransformer style (default) */
 
-#sk-container-id-6 div.sk-toggleable {
+#sk-container-id-1 div.sk-toggleable {
   /* Default theme specific background. It is overwritten whether we have a
   specific estimator or a Pipeline/ColumnTransformer */
   background-color: var(--sklearn-color-background);
 }
 
 /* Toggleable label */
-#sk-container-id-6 label.sk-toggleable__label {
+#sk-container-id-1 label.sk-toggleable__label {
   cursor: pointer;
   display: flex;
   width: 100%;
@@ -9444,13 +9446,13 @@ clickable and can be expanded/collapsed.
   gap: 0.5em;
 }
 
-#sk-container-id-6 label.sk-toggleable__label .caption {
+#sk-container-id-1 label.sk-toggleable__label .caption {
   font-size: 0.6rem;
   font-weight: lighter;
   color: var(--sklearn-color-text-muted);
 }
 
-#sk-container-id-6 label.sk-toggleable__label-arrow:before {
+#sk-container-id-1 label.sk-toggleable__label-arrow:before {
   /* Arrow on the left of the label */
   content: "▸";
   float: left;
@@ -9458,25 +9460,25 @@ clickable and can be expanded/collapsed.
   color: var(--sklearn-color-icon);
 }
 
-#sk-container-id-6 label.sk-toggleable__label-arrow:hover:before {
+#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
   color: var(--sklearn-color-text);
 }
 
 /* Toggleable content - dropdown */
 
-#sk-container-id-6 div.sk-toggleable__content {
+#sk-container-id-1 div.sk-toggleable__content {
   display: none;
   text-align: left;
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-6 div.sk-toggleable__content.fitted {
+#sk-container-id-1 div.sk-toggleable__content.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-6 div.sk-toggleable__content pre {
+#sk-container-id-1 div.sk-toggleable__content pre {
   margin: 0.2em;
   border-radius: 0.25em;
   color: var(--sklearn-color-text);
@@ -9484,79 +9486,79 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-6 div.sk-toggleable__content.fitted pre {
+#sk-container-id-1 div.sk-toggleable__content.fitted pre {
   /* unfitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
-#sk-container-id-6 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
   /* Expand drop-down */
   display: block;
   width: 100%;
   overflow: visible;
 }
 
-#sk-container-id-6 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
   content: "▾";
 }
 
 /* Pipeline/ColumnTransformer-specific style */
 
-#sk-container-id-6 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-6 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator-specific style */
 
 /* Colorize estimator box */
-#sk-container-id-6 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-6 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
-#sk-container-id-6 div.sk-label label.sk-toggleable__label,
-#sk-container-id-6 div.sk-label label {
+#sk-container-id-1 div.sk-label label.sk-toggleable__label,
+#sk-container-id-1 div.sk-label label {
   /* The background is the default theme color */
   color: var(--sklearn-color-text-on-default-background);
 }
 
 /* On hover, darken the color of the background */
-#sk-container-id-6 div.sk-label:hover label.sk-toggleable__label {
+#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
 /* Label box, darken color on hover, fitted */
-#sk-container-id-6 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
   color: var(--sklearn-color-text);
   background-color: var(--sklearn-color-fitted-level-2);
 }
 
 /* Estimator label */
 
-#sk-container-id-6 div.sk-label label {
+#sk-container-id-1 div.sk-label label {
   font-family: monospace;
   font-weight: bold;
   display: inline-block;
   line-height: 1.2em;
 }
 
-#sk-container-id-6 div.sk-label-container {
+#sk-container-id-1 div.sk-label-container {
   text-align: center;
 }
 
 /* Estimator-specific */
-#sk-container-id-6 div.sk-estimator {
+#sk-container-id-1 div.sk-estimator {
   font-family: monospace;
   border: 1px dotted var(--sklearn-color-border-box);
   border-radius: 0.25em;
@@ -9566,18 +9568,18 @@ clickable and can be expanded/collapsed.
   background-color: var(--sklearn-color-unfitted-level-0);
 }
 
-#sk-container-id-6 div.sk-estimator.fitted {
+#sk-container-id-1 div.sk-estimator.fitted {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-0);
 }
 
 /* on hover */
-#sk-container-id-6 div.sk-estimator:hover {
+#sk-container-id-1 div.sk-estimator:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-2);
 }
 
-#sk-container-id-6 div.sk-estimator.fitted:hover {
+#sk-container-id-1 div.sk-estimator.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-2);
 }
@@ -9665,7 +9667,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 
 /* "?"-specific style due to the `<a>` HTML tag */
 
-#sk-container-id-6 a.estimator_doc_link {
+#sk-container-id-1 a.estimator_doc_link {
   float: right;
   font-size: 1rem;
   line-height: 1em;
@@ -9680,21 +9682,21 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
 }
 
-#sk-container-id-6 a.estimator_doc_link.fitted {
+#sk-container-id-1 a.estimator_doc_link.fitted {
   /* fitted */
   border: var(--sklearn-color-fitted-level-1) 1pt solid;
   color: var(--sklearn-color-fitted-level-1);
 }
 
 /* On hover */
-#sk-container-id-6 a.estimator_doc_link:hover {
+#sk-container-id-1 a.estimator_doc_link:hover {
   /* unfitted */
   background-color: var(--sklearn-color-unfitted-level-3);
   color: var(--sklearn-color-background);
   text-decoration: none;
 }
 
-#sk-container-id-6 a.estimator_doc_link.fitted:hover {
+#sk-container-id-1 a.estimator_doc_link.fitted:hover {
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-3);
 }
@@ -9762,7 +9764,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
     height: 14px;
     cursor: pointer;
 }
-</style><body><div class="sk-top-container" id="sk-container-id-6"><div class="sk-text-repr-fallback"><pre>PLSRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br/>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input checked="" class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox"/><label class="sk-toggleable__label fitted sk-toggleable__label-arrow" for="sk-estimator-id-6"><div><div>PLSRegression</div></div><div><a class="sk-estimator-doc-link fitted" href="https://scikit-learn.org/1.7/modules/generated/sklearn.cross_decomposition.PLSRegression.html" rel="noreferrer" target="_blank">?<span>Documentation for PLSRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted" data-param-prefix="">
+</style><body><div class="sk-top-container" id="sk-container-id-1"><div class="sk-text-repr-fallback"><pre>PLSRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br/>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input checked="" class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox"/><label class="sk-toggleable__label fitted sk-toggleable__label-arrow" for="sk-estimator-id-1"><div><div>PLSRegression</div></div><div><a class="sk-estimator-doc-link fitted" href="https://scikit-learn.org/1.7/modules/generated/sklearn.cross_decomposition.PLSRegression.html" rel="noreferrer" target="_blank">?<span>Documentation for PLSRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted" data-param-prefix="">
 <div class="estimator-table">
 <details>
 <summary>Parameters</summary>
@@ -9854,7 +9856,7 @@ document.querySelectorAll('.fa-regular.fa-copy').forEach(function(element) {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [65]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># predictions on the test set</span>
@@ -9889,7 +9891,7 @@ Mean Squared Error: 0.2742417266638985
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [66]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># scatterplot</span>
@@ -10022,22 +10024,22 @@ Mean Squared Error: 0.2742417266638985
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=16e37eb5-c90e-4e28-87c4-bd7d3119f889">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=38ddc731-127c-481c-9bce-a81578f5ef57">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Non-Linear-Liking-PLR-R-Analysis">Non-Linear Liking PLR-R Analysis<a class="anchor-link" href="#Non-Linear-Liking-PLR-R-Analysis">¶</a></h2><p>We perform PLS-R using the sensory data with the non-liner liking ratings. First we split the data into training and test sets.</p>
+<h2 id="Non-Linear-Liking-PLS-R-Analysis">Non-Linear Liking PLS-R Analysis<a class="anchor-link" href="#Non-Linear-Liking-PLS-R-Analysis">¶</a></h2><p>We perform PLS-R using the sensory data with the non-liner liking ratings. First we split the data into training and test sets.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=800d65bb-d28c-43fa-94e1-484c570b850a">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=92a5c9f9-1e6a-4d78-9703-47a43c547641">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [41]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># assign sensory data to predictors (X) and linear liking to (y)</span>

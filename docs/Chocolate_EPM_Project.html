@@ -7511,7 +7511,7 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=efbb22b5-d454-4e14-8ee9-e5e2ae989b60">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2b1a69a7-ad46-455e-ac58-a8f3f091c902">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8398,7 +8398,7 @@ Rows after avg across panelists: 6
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bbf0c16c-9851-4ce1-b9fd-e6b2e830e7ac">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=016c3333-4aaa-4bf5-beb5-f276fa795a61">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8411,8 +8411,7 @@ Because the <em>sensochoc</em> dataset does not contain such consumer informatio
 <li><strong>Linear liking</strong> modeled as a simple linear combination of the sensory attributes, where sweetness, bitterness, and astringency contribute additively</li>
 <li><strong>Non-linear liking</strong> modeled age-dependent preference shifts and a non-linear response to extreme sweetness</li>
 </ul>
-<p>We simulate liking ratings in a roughly ecological way by linking them to a subset of sensory attributes and the consumer’s age.
-To control for individual differences in rating behavior, we also mean-center the raw liking ratings per person.</p>
+<p>To control for individual differences in rating behavior, we also mean-center the raw liking ratings per person.</p>
 </div>
 </div>
 </div>
@@ -10866,7 +10865,7 @@ Mean Squared Error: 0.5367488221393608
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=072584a5-d29d-46af-93f5-634d0479b757">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=23b3fa20-12a5-487d-a49d-b6fbb71ad10f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -10874,22 +10873,23 @@ Mean Squared Error: 0.5367488221393608
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h3 id="Key-Findings">Key Findings<a class="anchor-link" href="#Key-Findings">¶</a></h3><ul>
 <li>The PLS‑R model explained ~80% of variance in simulated linear liking scores.</li>
-<li>PLS-R models the linear component of the liking ratings well, but shows systematic underperformance at the extremes when liking contained a non-linear component.</li>
+<li>PLS-R models the linear component of the liking ratings well, but shows systematic underperformance at the extremes.</li>
 </ul>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=271c26b1-c16e-49b9-b211-6cab76333bfd">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=360ee0b0-e106-482e-be01-fcb75c0990d3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Take-Aways">Take Aways<a class="anchor-link" href="#Take-Aways">¶</a></h3><ul>
+<li>This simulation demonstrates how PLS-R can be used in to model the relationship of panel-collected sensory data with survey-collected consumer liking data, mirroring External Preference Mapping.</li>
+<li>PLS-R performed well when the simulated relationships were largely linear, but performance degraded at the extremes of the liking scale.</li>
+<li>The results make the practical point that PLS-R is useful for modeling linear relationships, but we should be more cautious in interpreting predictions where the relationships are non-linear.</li>
+</ul>
 </div>
 </div>
 </div>

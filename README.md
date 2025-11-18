@@ -20,8 +20,6 @@ This approach can inform why consumers may like a product and highlight which fe
 
 Simulate consumer liking data based on chocolate sensory profiles (e.g., sweetness, bitterness, astringency)
 
-Incorporate age effects on sweetness preference
-
 Apply mean-centering to control for individual rating biases
 
 Prepare data for modeling using PLSRegression to link sensory and consumer preference spaces
@@ -30,25 +28,19 @@ Compare PLS-R's performance when the relationship between the sensory profile an
 
 ## Key Findings
 
-• The PLS‑R model explained ~82% of variance in simulated liking scores.
-• Sweetness had the strongest positive loading; bitterness and astringency loaded negatively.
+- PLS-R performed well when the simulated relationships were largely linear, but performance degraded at the extremes of the liking scale for the non-linear liking example.
+- The results make the practical point that PLS-R is useful for modeling linear relationships, but we should be more cautious in interpreting predictions where the relationships are non-linear.
 
 ## Current Progress
 
 - Simulated consumer liking data for multiple products using linear and nonlinear approaches
 - Applied normalization (mean-centering) for within-subject variability
 - Visualized the distribution of raw and centered liking scores
-- Fitted and interpreted a PLS-R model with the linear liking data and visualized results with a biplot
-
-## Next Steps
-
-- Fit and interpret a PLS-R model with the non-linear liking data and visualized results with a biplot
-- Compare results to those of the linear liking approach
+- Fitted and interpreted a PLS-R model with the linear and non-linear liking data and visualized results with biplots
 
 ## Why this project
 
 This notebook demonstrates how predictive analytics techniques like PLS-R can be used to bridge sensory science and consumer insights, which is a key capability in flavor and food product research.
-
 
 ## View Notebooks (HTML)
 
